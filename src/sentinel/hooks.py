@@ -37,25 +37,26 @@ def install():
 
 def install_apt_hook():
     """Installs the pre-invoke hook for Debian/Ubuntu (APT)."""
+    sentinel_bin = os.path.abspath(sys.argv[0])
     hook_path = Path("/etc/apt/apt.conf.d/99sentinel-guardian")
-    # This line tells APT to run sentinel before it touches any packages
-    hook_content = 'DPkg::Pre-Invoke {"sentinel predict";};\n'
+    hook_content = f'DPkg::Pre-Invoke {{"{sentinel_bin} predict";}};\n'
     
     try:
         hook_path.write_text(hook_content)
         console.print(f"[bold green] Sentinel APT hook installed successfully at {hook_path}[/bold green]")
-        console.print("[dim]Sentinel will now actively intercept all 'apt' transactions.[/dim]")
+        console.print(f"[dim]Hook wired to executable: {sentinel_bin}[/dim]")
     except Exception as e:
         console.print(f"[bold red] Failed to write APT hook: {e}!!![/bold red]")
         sys.exit(1)
 
 def install_pacman_hook():
     """Installs the pre-transaction hook for Arch Linux (Pacman)."""
+    sentinel_bin = os.path.abspath(sys.argv[0])
     hook_dir = Path("/etc/pacman.d/hooks")
     hook_dir.mkdir(parents=True, exist_ok=True)
     hook_path = hook_dir / "99-sentinel-guardian.hook"
     
-    hook_content = """[Trigger]
+    hook_content = f"""[Trigger]
 Operation = Upgrade
 Operation = Install
 Type = Package
@@ -64,13 +65,13 @@ Target = *
 [Action]
 Description = Sentinel Linux: Analyzing blast radius...
 When = PreTransaction
-Exec = /usr/bin/env sentinel predict
+Exec = {sentinel_bin} predict
 AbortOnFail
 """
     try:
         hook_path.write_text(hook_content)
         console.print(f"[bold green]Sentinel Pacman hook installed successfully at {hook_path}[/bold green]")
-        console.print("[dim]Sentinel will now actively intercept all 'pacman' transactions.[/dim]")
+        console.print("[dim]Hook wired to executable: {sentinel_bin}[/dim]")
     except Exception as e:
         console.print(f"[bold red]Failed to write Pacman hook: {e}!!!![/bold red]")
         sys.exit(1)
