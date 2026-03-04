@@ -115,7 +115,7 @@ This project is actively being built for FOSS Hack 2026.
 - [x] **Phase 0:** CLI Scaffolding and Environment Setup
 - [x] **Phase 1:** Universal Hook Interceptor (`apt` & `pacman` integration)
 - [x] **Phase 2:** The Vanguard Engine (Predict Engine, DKMS Collision Logic, /boot Audits)
-- [ ] **Phase 3:** The Recovery Engine (Pre-Transaction Snapshots via Timeshift/BTRFS)
+- [x] **Phase 3:** The Recovery Engine (Pre-Transaction Snapshots via Timeshift/BTRFS)
 - [ ] **Phase 4:** The Diagnose Engine (Post-Crash `journalctl` Analysis)
 - [ ] **Phase 5:** Extensible Rules Schema (Custom `.toml` triggers for power users)
 - [ ] **Phase 6:** Atomic Local Rollback (`sentinel undo` via local cache simulation)
