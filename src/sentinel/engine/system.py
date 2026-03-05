@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 from rich.console import Console
+from sentinel.config import CONFIG
 
 console = Console()
 
@@ -72,22 +73,26 @@ def run_preflight_checks():
     
     return is_safe
 
-def assess_blaast_radius(package_data: str):
+def assess_blast_radius(input_data):
     """
-    Evaluates the package stream for critical system modifications.
-    Returns (is_scary: bool, risk_category: str
+    Determines if the update touches critical core system components
+    by reading the extensible rules schema (sentinel.toml).
     """
+    package_list = input_data.lower()
 
-    # categories for danger so that the user can know why we are taking a snapshot
-    categories = {
-        "Bootchain & Kernel": ["linux-image", "linux-headers", "initramfs", "grub", "shim", "systemd-boot"],
-        "Hardware Drivers": ["dkms", "nvidia", "mesa", "wayland", "xorg", "xserver-xorg"],
-        "Core Daemons & Libs": ["systemd", "libc6", "dbus", "cryptsetup", "libpam"]
-    }
+    high_risk_triggers = CONFIG.get("triggers", {}).get("high_risk", {})
+    medium_risk_triggers = CONFIG.get("triggers", {}).get("medium_risk", {})
 
-    # Scan the package data for triggers
-    for category, triggers in categories.items():
-        if any (trigger in package_data for trigger in triggers):
-            return True, category
-        
-    return False, "Standard Packages"
+    # Checking high risk packages
+    for category, packages in high_risk_triggers.items():
+        for pkg in packages:
+            if pkg in package_list:
+                return True, f"Critical System Component ({category.capitalize()})"
+
+    # Checking for medium risk
+    for category, packages in medium_risk_triggers.items():
+        for pkg in packages:
+            if pkg in package_list:                                                
+                return True, f"Core Subsystem ({category.replace('_', ' ').title()})"
+            
+    return False, "Standard Package Update"
