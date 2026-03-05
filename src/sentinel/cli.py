@@ -7,6 +7,7 @@ from sentinel.engine.security import analyze_security_risk
 from sentinel.engine.boot import analyze_boot_health
 from sentinel.engine.system import run_preflight_checks, assess_blaast_radius
 from sentinel.engine.recovery import trigger_snapshot
+from sentinel.engine.diagnose import run_diagnostics
 from sentinel.hooks import install
 
 console = Console()
@@ -47,8 +48,11 @@ def predict():
 
 @app.command()
 def diagnose():
-    """To analyze system logs and suggest fixes"""
-    print("Sentinel Diagnose: Analyzing system logs...")
+    """
+    Analyze system logs from the current boot to identify critical failures.
+    """
+    console.print("\n[bold cyan]~~~ Sentinel Post-Crash Diagnostics ~~~[/bold cyan]")
+    run_diagnostics()
 
 @app.command()
 def install_hooks():
