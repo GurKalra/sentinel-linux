@@ -1,6 +1,7 @@
 import subprocess
 from rich.console import Console
 from sentinel.engine.cache import get_cached_state, set_cached_state
+from sentinel.config import CONFIG
 
 console = Console()
 
@@ -43,10 +44,17 @@ def analyze_security_risk(package_list):
     """
     Surgical Trigger: Only wakes up if DKMS, Kernel, or Bootloader are changing.
     """
-    kernel_changing = "linux-image" in package_list or "linux-headers" in package_list
-    dkms_changing = "dkms" in package_list or "nvidia" in package_list or "virtualbox" in package_list
-    shim_changing = "shim" in package_list or "grub" in package_list
+    # Loading the list from the sentinel.toml
+    triggers = CONFIG.get("triggers", {})
+    kernel_pkgs = triggers.get("high_risk", {}).get("kernel", [])
+    boot_pkgs = triggers.get("high_risk", {}).get("bootloader", [])
+    driver_pkgs = triggers.get("high_risk", {}).get("drivers", [])
     
+    # Checking packages in the input matches
+    kernel_changing = any(pkg in package_list for pkg in kernel_pkgs)
+    shim_changing = any(pkg in package_list for pkg in boot_pkgs)
+    dkms_changing = any(pkg in package_list for pkg in driver_pkgs)
+
     # THE TRIGGER: Fast-pass if this is a boring update (like 'curl' or 'vlc')
     if not (kernel_changing or dkms_changing or shim_changing):
         return True
@@ -77,5 +85,4 @@ def analyze_security_risk(package_list):
         if kernel_changing and dkms_modules:
             console.print("    [white]DKMS modules will rebuild automatically for the new kernel. No MOK signing required.[/white]")
 
-    # We return True because we are warning the user, not forcing a hard-stop block.
     return True

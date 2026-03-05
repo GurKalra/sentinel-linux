@@ -1,0 +1,44 @@
+# ==========================================
+# Sentinel Linux - Extensible Rules Schema
+# ==========================================
+# Add or remove packages here to customize what Sentinel considers "dangerous".
+# If a package update contains any of these strings, Sentinel will trigger a snapshot.
+
+[triggers.high_risk]
+kernel = [
+    "linux-image", 
+    "linux-headers", 
+    "linux-lts", 
+    "linux-zen", 
+    "initramfs-tools", 
+    "mkinitcpio"
+]
+bootloader = [
+    "grub", 
+    "grub-efi", 
+    "shim", 
+    "shim-signed", 
+    "systemd-boot"
+]
+
+[triggers.medium_risk]
+drivers = [
+    "nvidia", 
+    "dkms", 
+    "virtualbox", 
+    "mesa-vulkan", 
+    "amdgpu"
+]
+display_server = [
+    "xserver-xorg", 
+    "wayland", 
+    "gdm3", 
+    "sddm", 
+    "lightdm"
+]
+core_daemons = [
+    "systemd", 
+    "libc6", 
+    "dbus", 
+    "glibc"
+]

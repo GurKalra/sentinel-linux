@@ -5,7 +5,7 @@ import select
 
 from sentinel.engine.security import analyze_security_risk
 from sentinel.engine.boot import analyze_boot_health
-from sentinel.engine.system import run_preflight_checks, assess_blaast_radius
+from sentinel.engine.system import run_preflight_checks, assess_blast_radius
 from sentinel.engine.recovery import trigger_snapshot
 from sentinel.engine.diagnose import run_diagnostics
 from sentinel.hooks import install
@@ -37,7 +37,7 @@ def predict():
         analyze_security_risk(input_data)
 
         #3. Assess the Blast Radius (The Recovery Engine)
-        is_scary, risk_category = assess_blaast_radius(input_data)
+        is_scary, risk_category = assess_blast_radius(input_data)
 
         if is_scary:
             console.print(f"\n[bold cyan] High-Risk Update Detected: [white]{risk_category}[/white][/bold cyan]")
@@ -60,6 +60,22 @@ def install_hooks():
     Install package manager hooks to run sentinel automatically (Requires Root).
     """
     install()
+
+@app.command()
+def undo():
+    """
+    Instantly revert the system to the last Sentinel-created snapshot.
+    """
+    console.print("\n[bold yellow]🚧 The 'undo' engine is currently under construction.[/bold yellow]")
+    console.print("[white]Soon, this will automatically restore your last Timeshift/Snapper backup.[/white]\n")
+
+@app.command()
+def heal():
+    """
+    Auto-restart crashed user-space services based on recent log diagnostics.
+    """
+    console.print("\n[bold yellow]🚧 The 'heal' engine is currently under construction.[/bold yellow]")
+    console.print("[white]Soon, this will cross-reference diagnostics and restart broken daemons.[/white]\n")
 
 if __name__=="__main__":
     app()
