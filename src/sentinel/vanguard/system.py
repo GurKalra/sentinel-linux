@@ -5,6 +5,7 @@ import re
 from rich.console import Console
 from sentinel.config import CONFIG
 from sentinel.core.logger import logger
+from sentinel.intelligence.heuristic import scan_transaction_heuristics
 
 console = Console()
 
@@ -120,5 +121,11 @@ def assess_blast_radius(safe_package_list: list[str]) -> tuple[bool, str]:
         for pkg in packages:
             if shlex.quote(pkg) in safe_package_list:                                                
                 return True, f"Core Subsystem ({category.replace('_', ' ').title()})"
+    
+    logger.info("Packages not found in static config. Deferring to Heuristic Engine.")
+    is_scary, reason = scan_transaction_heuristics(safe_package_list)
+
+    if is_scary:
+        return True, reason
             
     return False, "Standard Package Update"

@@ -21,6 +21,7 @@ bootloader = [
     "shim-signed", 
     "systemd-boot"
 ]
+heuristics = ["sudo"] # Packages dynamically flagged by Sentinel's Intelligence Engine
 
 [triggers.medium_risk]
 drivers = [
