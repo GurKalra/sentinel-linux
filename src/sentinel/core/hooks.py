@@ -1,25 +1,21 @@
 import os
-import shutil
 import sys
 from pathlib import Path
 from rich.console import Console
 
-console = Console()
+from sentinel.core.utils import detect_package_manager
+from sentinel.core.logger import logger
 
-def detect_package_manager():
-    """Returns the name of the installed package manager."""
-    if shutil.which("apt"):
-        return "apt"
-    elif shutil.which("pacman"):
-        return "pacman"
-    return None
+console = Console()
 
 def install():
     """Installs the Sentinel pre-transaction hooks."""
+    logger.info("Initializing Sentinel Hook Installer.")
     console.print("[bold cyan]Sentinel Linux: Initializing Hook Installer...[/bold cyan]")
     
     # 1. Enforce Root Privileges
     if os.geteuid() != 0:
+        logger.error("Hook installation failed: Root privileges required.")
         console.print("[bold red] Error: Installing system hooks requires root privileges!!![/bold red]")
         console.print("Try running: [bold yellow]sudo sentinel install-hooks[/bold yellow]")
         sys.exit(1)
@@ -28,10 +24,13 @@ def install():
     pm = detect_package_manager()
     
     if pm == "apt":
+        logger.info("Detected APT package manager.")
         install_apt_hook()
     elif pm == "pacman":
+        logger.info("Detected Pacman package manager.")
         install_pacman_hook()
     else:
+        logger.error("Hook installation failed: Unsupported package manager detected.")
         console.print("[bold red] Error: Unsupported package manager. Sentinel currently supports apt and pacman.[/bold red]")
         sys.exit(1)
 
@@ -43,9 +42,11 @@ def install_apt_hook():
     
     try:
         hook_path.write_text(hook_content)
+        logger.info(f"APT hook successfully installed at {hook_path}")
         console.print(f"[bold green] Sentinel APT hook installed successfully at {hook_path}[/bold green]")
         console.print(f"[dim]Hook wired to executable: {sentinel_bin}[/dim]")
     except Exception as e:
+        logger.error(f"Failed to write APT hook to {hook_path}: {e}")
         console.print(f"[bold red] Failed to write APT hook: {e}!!![/bold red]")
         sys.exit(1)
 
@@ -70,8 +71,10 @@ AbortOnFail
 """
     try:
         hook_path.write_text(hook_content)
+        logger.info(f"Pacman hook successfully installed at {hook_path}")
         console.print(f"[bold green]Sentinel Pacman hook installed successfully at {hook_path}[/bold green]")
         console.print("[dim]Hook wired to executable: {sentinel_bin}[/dim]")
     except Exception as e:
+        logger.error(f"Failed to write Pacman hook to {hook_path}: {e}")
         console.print(f"[bold red]Failed to write Pacman hook: {e}!!!![/bold red]")
         sys.exit(1)

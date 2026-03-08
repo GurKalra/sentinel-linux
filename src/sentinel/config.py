@@ -1,20 +1,82 @@
-import tomllib
+import tomlkit
+import os
 from pathlib import Path
+from sentinel.core.logger import logger
 
 CONFIG_PATHS = [
     Path("sentinel.toml"), #Local dev folder
     Path("/etc/sentinel/sentinel.toml")  # System-wide install
 ]
 
-def load_config():
-    """Reads the TOML schema. Fallback to empty if missing."""
+CONFIG = {}
+
+def get_active_config_path() -> Path | None:
+    """Detects which config file Sentinel is currently using."""
     for path in CONFIG_PATHS:
         if path.exists():
-            try:
-                with open(path, "rb") as f:
-                    return tomllib.load(f)
-            except Exception:
-                continue
-    return {"triggers": {"high_risk" : {}, "medium_risk": {}}}
+            return path
+    return None
 
-CONFIG = load_config() 
+def reload_config():
+    """Reads the TOML schema and refreshes the in-memory CONFIG."""
+    global CONFIG
+    path  = get_active_config_path()
+
+    if path:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                CONFIG = tomlkit.parse(f.read())
+                logger.debug(f"Config reloaded from {path}")
+            return
+        except Exception as e:
+            logger.error(f"Failed to load config from {path}: {e}")
+        
+    # Fallback Structure if the file is missing or corrupt
+    CONFIG = {"triggers": {"high_risk" : {}, "medium_risk": {}}}
+
+def save_learned_package(pkg_name: str, reason: str) -> bool:
+    """Surgically injects a dynamically learned package into the TOML file.
+    Preserves all user comments and automatically reloads the RAM config."""
+    path = get_active_config_path()
+    if not path:
+        logger.warning("No sentinel.toml found. Cannot persist learned package.")
+        return False
+    
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            doc = tomlkit.parse(f.read())
+        
+        if "triggers" not in doc:
+            doc.add("triggers", tomlkit.table())
+        if "high_risk" not in doc["triggers"]:
+            doc["triggers"]["high_risk"] = tomlkit.table()
+
+        high_risk_table = doc["triggers"]["high_risk"]
+        if "heuristics" not in high_risk_table:
+            heuristics_array = tomlkit.array()
+            high_risk_table.add("heuristics", heuristics_array)
+            high_risk_table["heuristics"].comment("Packages dynamically flagged by Sentinel's Intelligence Engine")
+
+        heuristics_list = high_risk_table["heuristics"]
+
+        # Preventing duplicates
+        if pkg_name in heuristics_list:
+            logger.debug(f"Package '{pkg_name}' is already known to Sentinel.")
+            return True
+        
+        logger.info(f"Sentinel learned new threat: '{pkg_name}' ({reason})")
+        heuristics_list.append(pkg_name)
+
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(tomlkit.dumps(doc))
+
+        if os.geteuid() == 0:
+            os.chmod(path, 0o600)
+
+        reload_config()
+        return True
+    except Exception as e:
+        logger.error(f"Intelligence persistence failed via tomlkit: {e}")
+        return False
+
+reload_config()
