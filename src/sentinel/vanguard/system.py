@@ -19,12 +19,22 @@ def parse_and_sanitize_packages(raw_input: str) -> list[str]:
     lines = raw_input.strip().split()
     safe_pattern = re.compile(r"^[a-zA-Z0-9\-_\.\+]+$")
 
+    in_packages = False
+    if not lines or not lines[0].startswith("VERSION"):
+        in_packages = True
+
     for line in lines:
         line = line.strip()
-        if not line or line.startswith("VERSION"):
+        
+        if not line:
+            in_packages = True
+            continue
+
+        if not in_packages:
             continue
 
         # Extract filename from path
+        first_token = line.split()[0]
         basename = line.split('/')[-1]
 
         # Extract actual package name
