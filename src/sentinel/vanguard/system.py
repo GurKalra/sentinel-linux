@@ -16,7 +16,7 @@ def parse_and_sanitize_packages(raw_input: str) -> list[str]:
     Returns a clean list of safe package names.
     """
     clean_packages = []
-    lines = raw_input.strip().split()
+    lines = raw_input.strip().splitlines()
     safe_pattern = re.compile(r"^[a-zA-Z0-9\-_\.\+]+$")
 
     in_packages = False
