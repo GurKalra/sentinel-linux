@@ -43,6 +43,21 @@ def determine_fixes(culprits: list) -> list[tuple[str, list[str]]]:
         if identifier in HEAL_PLAYBOOK:
             proposed_fixes.append((f"{identifier} Crash", HEAL_PLAYBOOK[identifier]))
         
+        # If systemd is complaning , search through the actual message
+        if identifier.lower() == "systemd":
+            matched = False
+            for service, cmds in HEAL_PLAYBOOK.items():
+                if service.lower() in msg:
+                    proposed_fixes.append((f"{service} Crash (Caught via systemd)", cmds))
+                    matched = True
+                    break
+            if matched:
+                continue
+        
+        # For genral fallback, propose a general restart
+        if identifier.lower() not in ["kernel", "systemd", "unknown subsystem"]:
+            proposed_fixes.append((f"{identifier} Service Failure", [f"systemctl restart {identifier}"]))
+        
     return proposed_fixes
 
 def run_autoheal_sequence(culprits: list):
