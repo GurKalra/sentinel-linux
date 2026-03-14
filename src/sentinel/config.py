@@ -3,8 +3,10 @@ import os
 from pathlib import Path
 from sentinel.core.logger import logger
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
 CONFIG_PATHS = [
-    Path("sentinel.toml"), #Local dev folder
+    PROJECT_ROOT / "sentinel.toml", #Local dev folder
     Path("/etc/sentinel/sentinel.toml")  # System-wide install
 ]
 

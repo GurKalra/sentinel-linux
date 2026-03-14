@@ -1,6 +1,8 @@
 import os
 import shutil
+import shlex
 from rich.console import Console
+from sentinel.config import CONFIG
 from sentinel.core.logger import logger
 
 console = Console()
@@ -43,14 +45,22 @@ def count_installed_kernels() -> int:
 
 def analyze_boot_health(safe_package_list: list[str]) -> bool:
     """
-    Surgical Trigger: Only runs if kernel or initramfs packages are in the transaction.
+    Dynamic Trigger: Reads the TOML configuration to determine what constitutes
+    a kernel or bootloader update, preserving shlex injection security.
     """
-    is_boot_update = any(
-        pkg.startswith("linux-image") or pkg.startswith("initramfs")
-        for pkg in safe_package_list
-    )
+    triggers = CONFIG.get("triggers", {})
+    kernel_pkgs = triggers.get("high_risk", {}).get("kernel", [])
+    boot_pkgs = triggers.get("high_risk", {}).get("bootloader", [])
 
-    # Skipp if it is a normla app update
+    boot_triggers = kernel_pkgs + boot_pkgs 
+    # Skip if it is a normal app update
+    is_boot_update = False
+    for trigger in boot_triggers:
+        safe_trigger = shlex.quote(trigger)
+        if any(safe_trigger in pkg for pkg in safe_package_list):
+            is_boot_update = True
+            break
+        
     if not is_boot_update:
         return True
     

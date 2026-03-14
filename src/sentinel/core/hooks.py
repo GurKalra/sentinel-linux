@@ -38,7 +38,8 @@ def install_apt_hook():
     """Installs the pre-invoke hook for Debian/Ubuntu (APT)."""
     sentinel_bin = os.path.abspath(sys.argv[0])
     hook_path = Path("/etc/apt/apt.conf.d/99sentinel-guardian")
-    hook_content = f'DPkg::Pre-Install-Pkgs {{"{sentinel_bin} predict";}};\n'
+    hook_content = f"""DPkg::Pre-Install-Pkgs {{"{sentinel_bin} predict";}};
+    DPkg::Tools::Options::{sentinel_bin}::Version "3";"""
     
     try:
         hook_path.write_text(hook_content)
