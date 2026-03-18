@@ -114,7 +114,7 @@ def undo():
         state = get_latest_system_snapshot()
     if not state:
         logger.warning("Undo aborted: No snapshot history found.")
-        console.print("[yellow]No recent prescient snapshots found on this system.[/yellow]")
+        console.print("[yellow]No recent snapshots found on this system.[/yellow]")
         console.print("[dim white]If you recently installed prescient, a snapshot will be created automatically on your next high-risk update.[/dim white]\n")
         sys.exit(0)
 

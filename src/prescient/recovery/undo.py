@@ -2,6 +2,7 @@ import subprocess
 import json
 import re
 import shutil
+from datetime import datetime
 from pathlib import Path
 from rich.console import Console
 from prescient.core.logger import logger
@@ -33,10 +34,19 @@ def get_latest_system_snapshot() -> dict | None:
             )
             matches = re.findall(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})", res.stdout)
             if matches:
+                snap_name = matches[-1]
+
+                # Converting the timeshift format to real timestamp
+                try:
+                    dt = datetime.strptime(snap_name, "%Y-%m-%d_%H-%M-%S")
+                    real_time = dt.timestamp()
+                except ValueError:
+                    real_time = 0.0
+
                 return{
                     "provider": "timeshift",
-                    "snapshot_name": matches[-1], 
-                    "created_at": 0.0,
+                    "snapshot_name": snap_name, 
+                    "created_at": real_time,
                     "trigger_reason": "Manual/System Snapshot (Non-Prescient)"
                 }
         except Exception as e:
