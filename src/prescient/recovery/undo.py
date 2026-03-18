@@ -35,7 +35,7 @@ def get_latest_system_snapshot() -> dict | None:
             if matches:
                 return{
                     "provider": "timeshift",
-                    "snapshot_name": matches[-1], # Grab the very last one
+                    "snapshot_name": matches[-1], 
                     "created_at": 0.0,
                     "trigger_reason": "Manual/System Snapshot (Non-Prescient)"
                 }

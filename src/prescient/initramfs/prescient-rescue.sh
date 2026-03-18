@@ -4,6 +4,19 @@ echo "=========================================="
 echo "    PRESCIENT EMERGENCY RESCUE SYSTEM     "
 echo "=========================================="
 
+# Cleanup trap to prevent lockups
+cleanup() {
+    echo  "[*] Cleaning up virtual mounts..."
+    umount /root/dev/pts 2>/dev/null
+    umount /root/dev     2>/dev/null
+    umount /root/run     2>/dev/null
+    umount /root/tmp     2>/dev/null
+    umount /root/proc    2>/dev/null
+    umount /root/sys     2>/dev/null
+    echo "[+] Cleanup complete."
+}
+trap cleanup EXIT
+
 # Trying to find the root partition if not mounted
 if [ ! -d "/root/etc" ]; then
     echo "[*] Searching for root partition..."
@@ -11,11 +24,22 @@ if [ ! -d "/root/etc" ]; then
 
     for part in /dev/sd* /dev/vd* /dev/nvme* /dev/mapper/*; do
         [ -b "$part" ] || continue
+        # EXT4/XFS
         mount -o ro "$part" /mnt >/dev/null 2>&1
         if [ -f "/mnt/etc/os-release" ]; then
             echo "[+] Found Root Partition at $part"
             umount /mnt
             mount "$part" /root
+            break
+        fi
+        umount /mnt >/dev/null 2>&1
+
+        # BTRFS subvolumes
+        mount -o ro, subvol=@ "$part" /mnt >/dev/null 2>&1
+        if [ -f "/mnt/etc/os-release" ]; then
+            echo "[+] Found BTRFS Root Subvolume at $part"
+            umount /mnt
+            mount -o subvol=@ "$part" /root
             break
         fi
         umount /mnt >/dev/null 2>&1
@@ -28,6 +52,12 @@ if [ -d "/root/etc" ];then
     mount -t proc proc /root/proc
     mount -t sysfs sys /root/sys
     mount -o bind /dev /root/dev
+
+    mount -t tmpfs tmpfs /root/run
+    chmod 755 /root/run
+    mount -t devpts devpts /root/dev/pts
+    mount -t tmpfs tmpfs /root/tmp
+
 
     echo "[+] Prescient Rollback Engine..."
     chroot /root /bin/bash -c "prescient undo"
