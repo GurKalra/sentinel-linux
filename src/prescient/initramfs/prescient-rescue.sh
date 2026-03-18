@@ -14,7 +14,7 @@ if [ -d "/root/etc" ];then
     mount -t sysfs sys /root/sys
     mount -o bind /dev /root/dev
 
-    echo "[+] Waking up Prescient Rollback Engine...'
+    echo "[+] Waking up Prescient Rollback Engine..."
     chroot /root /bin/bash -c "prescient undo"
 
     echo "=========================================="
