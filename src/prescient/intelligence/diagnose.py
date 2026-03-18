@@ -25,7 +25,7 @@ def get_structured_logs() -> list:
             except json.JSONDecodeError:
                 continue
         return logs
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         logger.error(f"Failed to read system journals: {e}")
         console.print("[yellow] Unable to read system journals. Are you running as root?[/yellow]")
         return []
@@ -46,7 +46,7 @@ def run_diagnostics() -> list:
     if not logs:
         logger.info("Diagnostic scan clean. No critical errors found.")
         console.print("[bold green] No critical errors found in the current boot log![/bold green]")
-        return
+        return []
     
     # Dyanmically grouping errors by program/service
     culprits = {}

@@ -97,7 +97,8 @@ def verify_snapshot(state: dict) -> bool:
                 text=True,
                 timeout=10
             )
-            return snap_target in res.stdout
+            if snap_target in res.stdout:
+                return True
         elif provider == "timeshift":
             res = subprocess.run(
                 ["timeshift", "--list"],
@@ -105,11 +106,30 @@ def verify_snapshot(state: dict) -> bool:
                 text=True,
                 timeout=10
             )
-            return snap_target in res.stdout
-    except Exception as e:
-        logger.error(f"Snapshot verification failed for {provider}: {e}")
-        return False
+            if snap_target in res.stdout:
+                return True
+    except Exception:
+        pass
+    
+    logger.info("CLI verification failed. Falling back to filesystem verification...")
 
+    if provider == "timeshift":
+        possible_paths = [
+            Path(f"/timeshift/snapshots/{snap_target}"),
+            Path(f"/run/timeshift/backup/timeshift/snapshots/{snap_target}"),
+        ]
+        for path in possible_paths:
+            if path.exists():
+                logger.info(f"Snapshot verified via filesystem at {path}")
+                return True
+            
+    elif provider == "snapper":
+        snapper_path = Path(f"/.snapshots/{snap_target}/snapshot")
+        if snapper_path.exists():
+            logger.info(f"Snapshot verified via filesystem at {snapper_path}")
+            return True
+
+    logger.error(f"Snapshot '{snap_target}' could not be verified by CLI or filesystem.")
     return False
 
 def execute_rollback(state: dict) -> bool:
