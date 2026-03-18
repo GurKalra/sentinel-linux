@@ -7,6 +7,8 @@ echo "=========================================="
 # Trying to find the root partition if not mounted
 if [ ! -d "/root/etc" ]; then
     echo "[*] Searching for root partition..."
+    mkdir -p /mnt
+
     for part in /dev/sd* /dev/vd* /dev/nvme* /dev/mapper/*; do
         [ -b "$part" ] || continue
         mount -o ro "$part" /mnt >/dev/null 2>&1
