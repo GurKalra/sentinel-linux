@@ -5,18 +5,18 @@ import os
 import time
 import select
 
-from sentinel.core.hooks import install
-from sentinel.core.logger import logger
-from sentinel.vanguard.security import analyze_security_risk
-from sentinel.vanguard.boot import analyze_boot_health
-from sentinel.vanguard.system import run_preflight_checks, assess_blast_radius, parse_and_sanitize_packages
-from sentinel.recovery.snapshot import trigger_snapshot
-from sentinel.intelligence.diagnose import run_diagnostics
-from sentinel.intelligence.autoheal import run_autoheal_sequence
-from sentinel.recovery.undo import get_last_snapshot, verify_snapshot, execute_rollback
+from prescient.core.hooks import install
+from prescient.core.logger import logger
+from prescient.vanguard.security import analyze_security_risk
+from prescient.vanguard.boot import analyze_boot_health
+from prescient.vanguard.system import run_preflight_checks, assess_blast_radius, parse_and_sanitize_packages
+from prescient.recovery.snapshot import trigger_snapshot
+from prescient.intelligence.diagnose import run_diagnostics
+from prescient.intelligence.autoheal import run_autoheal_sequence
+from prescient.recovery.undo import get_last_snapshot, verify_snapshot, execute_rollback
 
 console = Console()
-app = typer.Typer(help="Sentinel Linux: Predict, Protect, Recover")
+app = typer.Typer(help="Prescient Linux: Predict, Protect, Recover")
 
 def _format_relative_time(timestamp: float) -> str:
     """
@@ -34,7 +34,7 @@ def _format_relative_time(timestamp: float) -> str:
 @app.command()
 def install_hooks():
     """
-    Install package manager hooks to run sentinel automatically (Requires Root).
+    Install package manager hooks to run prescient automatically (Requires Root).
     """
     logger.info("Installing package manager hooks.")
     install()
@@ -46,14 +46,14 @@ def predict():
     """
     input_data = ""
 
-    #if nothing arrives, sentinel will not freeze. It will keep going
+    #if nothing arrives, prescient will not freeze. It will keep going
     if not sys.stdin.isatty():
         input_data = sys.stdin.read()
 
     # 1. IMMEDIATE HARD STOP (Pre-flight health)
     if not run_preflight_checks():
         logger.error("VETO: System pre-flight health checks failed. Aborting transaction.")
-        console.print("\n[bold red]!!!SENTINEL VETO: System health checks failed!!![/bold red]")
+        console.print("\n[bold red]!!!Prescient VETO: System health checks failed!!![/bold red]")
         console.print("[white]Aborting installation to prevent system breakage.[/white]")
         sys.exit(1)  # This stops the APT transaction
 
@@ -77,7 +77,7 @@ def predict():
             logger.info("No high-risk packages detected in transaction.")
 
     logger.info("Audit complete. Proceeding with installation.")    
-    console.print("\n[bold green]Sentinel Audit Complete. Proceeding with transaction...[/bold green]")
+    console.print("\n[bold green]Prescient Audit Complete. Proceeding with transaction...[/bold green]")
 
 @app.command()
 def diagnose():
@@ -85,14 +85,14 @@ def diagnose():
     Analyze system logs from the current boot to identify critical failures.
     """
     logger.info("User initiated post-crash diagnostics.")
-    console.print("\n[bold cyan]~~~ Sentinel Post-Crash Diagnostics ~~~[/bold cyan]")
+    console.print("\n[bold cyan]~~~ Prescient Post-Crash Diagnostics ~~~[/bold cyan]")
     run_diagnostics()
 
 
 @app.command()
 def undo():
     """
-    Instantly revert the system to the last Sentinel-created snapshot.
+    Instantly revert the system to the last prescient-created snapshot.
     """
     logger.info("User requested atomic rollback (undo)")
 
@@ -100,17 +100,17 @@ def undo():
     if os.geteuid() != 0:
         logger.error("Undo failed: Root privileges required.")
         console.print("\n[bold red]Error: Restoring a root filesystem requires root privileges.[/bold red]")
-        console.print("Try running: [bold yellow]sudo sentinel undo[/bold yellow]\n")
+        console.print("Try running: [bold yellow]sudo prescient undo[/bold yellow]\n")
         sys.exit(1)
 
-    console.print("\n[bold cyan]~~~ Sentinel Recovery Engine ~~~[/bold cyan]")
+    console.print("\n[bold cyan]~~~ Prescient Recovery Engine ~~~[/bold cyan]")
 
     # State check
     state = get_last_snapshot()
     if not state:
         logger.warning("Undo aborted: No snapshot history found.")
-        console.print("[yellow]No recent Sentinel snapshots found on this system.[/yellow]")
-        console.print("[dim white]If you recently installed Sentinel, a snapshot will be created automatically on your next high-risk update.[/dim white]\n")
+        console.print("[yellow]No recent prescient snapshots found on this system.[/yellow]")
+        console.print("[dim white]If you recently installed prescient, a snapshot will be created automatically on your next high-risk update.[/dim white]\n")
         sys.exit(0)
 
     # Verification check
@@ -150,7 +150,7 @@ def undo():
         else:
             console.print("[bold green]Rollback complete. Please reboot manually: [yellow]sudo reboot[/yellow][/bold green]")
     else:
-        console.print("[bold red]Rollback failed. Check /var/log/sentinel.log for details.[/bold red]\n")
+        console.print("[bold red]Rollback failed. Check /var/log/prescient.log for details.[/bold red]\n")
         sys.exit(1)
 
 @app.command()
@@ -158,8 +158,8 @@ def heal():
     """
     Transparently propose and execute fixes for crashed services based on log diagnostics.
     """
-    logger.info("User requested heal. Feature under construction.")
-    console.print("\n[bold cyan]~~~ Sentinel Diagnostics & Auto-Heal ~~~[/bold cyan]")
+    logger.info("User initiated Auto-Heal sequence.")
+    console.print("\n[bold cyan]~~~ Prescient Diagnostics & Auto-Heal ~~~[/bold cyan]")
 
     culprits = run_diagnostics()
     run_autoheal_sequence(culprits)

@@ -4,9 +4,9 @@ import subprocess
 import shlex
 import re
 from rich.console import Console
-from sentinel.config import CONFIG
-from sentinel.core.logger import logger
-from sentinel.intelligence.heuristic import scan_transaction_heuristics
+from prescient.config import CONFIG
+from prescient.core.logger import logger
+from prescient.intelligence.heuristic import scan_transaction_heuristics
 
 console = Console()
 
@@ -98,7 +98,7 @@ def run_preflight_checks() -> bool:
     Executes all system-level health checks.
     Returns True if safe to proceed, False if a Hard-Stop is required.
     """
-    console.print("[bold cyan]~~~Sentinel Pre-Flight Audit...~~~[/bold cyan]")
+    console.print("[bold cyan]~~~prescient Pre-Flight Audit...~~~[/bold cyan]")
     logger.info("Initiating pre-flight system health audit.")
     is_safe = True
 
@@ -139,7 +139,7 @@ def run_preflight_checks() -> bool:
 def assess_blast_radius(safe_package_list: list[str]) -> tuple[bool, str]:
     """
     Determines if the update touches critical core system components
-    by reading the extensible rules schema (sentinel.toml).
+    by reading the extensible rules schema (prescient.toml).
     """
     high_risk_triggers = CONFIG.get("triggers", {}).get("high_risk", {})
     medium_risk_triggers = CONFIG.get("triggers", {}).get("medium_risk", {})

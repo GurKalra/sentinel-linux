@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-REPO_URL="https://github.com/GurKalra/sentinel-linux.git"
-INSTALL_DIR="$HOME/.sentinel"
+REPO_URL="https://github.com/GurKalra/prescient-linux.git"
+INSTALL_DIR="$HOME/.prescient"
 
-echo "Deploying Sentinel....."
+echo "Deploying prescient....."
 
 # Upfront sudo check
 echo "Checking sudo privileges for global installation..."
@@ -32,7 +32,7 @@ if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR"
     git pull origin main --quiet
 else
-    echo "Cloning Sentinel repository..."
+    echo "Cloning Prescient repository..."
     git clone --quiet "$REPO_URL" "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 fi
@@ -50,10 +50,10 @@ echo "Handing off to Makefile for system integration..."
 make install
 
 echo ""
-echo "Sentinel deployed successfully!"
+echo "Prescient installed successfully!"
 echo "Core commands available: "
-echo "  sudo sentinel install-hooks  # Wire into apt/pacman"
-echo "  sudo sentinel predict        # Manual risk scan"
-echo "  sudo sentinel diagnose       # Post-crash analysis"
-echo "  sudo sentinel heal           # Transparent auto-recovery"
-echo "  sudo sentinel undo           # Roll back last update"
+echo "  sudo prescient install-hooks  # Wire into apt/pacman"
+echo "  sudo prescient predict        # Manual risk scan"
+echo "  sudo prescient diagnose       # Post-crash analysis"
+echo "  sudo prescient heal           # Transparent auto-recovery"
+echo "  sudo prescient undo           # Roll back last update"

@@ -1,8 +1,8 @@
 # ==========================================
-# Sentinel Linux - Extensible Rules Schema
+# prescient Linux - Extensible Rules Schema
 # ==========================================
-# Add or remove packages here to customize what Sentinel considers "dangerous".
-# If a package update contains any of these strings, Sentinel will trigger a snapshot.
+# Add or remove packages here to customize what prescient considers "dangerous".
+# If a package update contains any of these strings, prescient will trigger a snapshot.
 
 [triggers.high_risk]
 kernel = [
@@ -21,7 +21,7 @@ bootloader = [
     "shim-signed", 
     "systemd-boot"
 ]
-heuristics = ["sudo"] # Packages dynamically flagged by Sentinel's Intelligence Engine
+heuristics = ["sudo", "libssh-4", "libssh-gcrypt-4", "libexiv2-27", "snapd"] # Packages dynamically flagged by prescient's Intelligence Engine
 
 [triggers.medium_risk]
 drivers = [

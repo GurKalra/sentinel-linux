@@ -3,21 +3,21 @@ import sys
 from pathlib import Path
 from rich.console import Console
 
-from sentinel.core.utils import detect_package_manager
-from sentinel.core.logger import logger
+from prescient.core.utils import detect_package_manager
+from prescient.core.logger import logger
 
 console = Console()
 
 def install():
-    """Installs the Sentinel pre-transaction hooks."""
-    logger.info("Initializing Sentinel Hook Installer.")
-    console.print("[bold cyan]Sentinel Linux: Initializing Hook Installer...[/bold cyan]")
+    """Installs the prescient pre-transaction hooks."""
+    logger.info("Initializing prescient Hook Installer.")
+    console.print("[bold cyan]prescient Linux: Initializing Hook Installer...[/bold cyan]")
     
     # 1. Enforce Root Privileges
     if os.geteuid() != 0:
         logger.error("Hook installation failed: Root privileges required.")
         console.print("[bold red] Error: Installing system hooks requires root privileges!!![/bold red]")
-        console.print("Try running: [bold yellow]sudo sentinel install-hooks[/bold yellow]")
+        console.print("Try running: [bold yellow]sudo prescient install-hooks[/bold yellow]")
         sys.exit(1)
 
     # 2. Detect the Host OS Package Manager
@@ -31,21 +31,21 @@ def install():
         install_pacman_hook()
     else:
         logger.error("Hook installation failed: Unsupported package manager detected.")
-        console.print("[bold red] Error: Unsupported package manager. Sentinel currently supports apt and pacman.[/bold red]")
+        console.print("[bold red] Error: Unsupported package manager. prescient currently supports apt and pacman.[/bold red]")
         sys.exit(1)
 
 def install_apt_hook():
     """Installs the pre-invoke hook for Debian/Ubuntu (APT)."""
-    sentinel_bin = os.path.abspath(sys.argv[0])
-    hook_path = Path("/etc/apt/apt.conf.d/99sentinel-guardian")
-    hook_content = f"""DPkg::Pre-Install-Pkgs {{"{sentinel_bin} predict";}};
-    DPkg::Tools::Options::{sentinel_bin}::Version "3";"""
+    prescient_bin = os.path.abspath(sys.argv[0])
+    hook_path = Path("/etc/apt/apt.conf.d/99prescient-guardian")
+    hook_content = f"""DPkg::Pre-Install-Pkgs {{"{prescient_bin} predict";}};
+    DPkg::Tools::Options::{prescient_bin}::Version "3";"""
     
     try:
         hook_path.write_text(hook_content)
         logger.info(f"APT hook successfully installed at {hook_path}")
-        console.print(f"[bold green] Sentinel APT hook installed successfully at {hook_path}[/bold green]")
-        console.print(f"[dim]Hook wired to executable: {sentinel_bin}[/dim]")
+        console.print(f"[bold green] prescient APT hook installed successfully at {hook_path}[/bold green]")
+        console.print(f"[dim]Hook wired to executable: {prescient_bin}[/dim]")
     except Exception as e:
         logger.error(f"Failed to write APT hook to {hook_path}: {e}")
         console.print(f"[bold red] Failed to write APT hook: {e}!!![/bold red]")
@@ -53,10 +53,10 @@ def install_apt_hook():
 
 def install_pacman_hook():
     """Installs the pre-transaction hook for Arch Linux (Pacman)."""
-    sentinel_bin = os.path.abspath(sys.argv[0])
+    prescient_bin = os.path.abspath(sys.argv[0])
     hook_dir = Path("/etc/pacman.d/hooks")
     hook_dir.mkdir(parents=True, exist_ok=True)
-    hook_path = hook_dir / "99-sentinel-guardian.hook"
+    hook_path = hook_dir / "99-prescient-guardian.hook"
     
     hook_content = f"""[Trigger]
 Operation = Upgrade
@@ -65,16 +65,16 @@ Type = Package
 Target = *
 
 [Action]
-Description = Sentinel Linux: Analyzing blast radius...
+Description = prescient Linux: Analyzing blast radius...
 When = PreTransaction
-Exec = {sentinel_bin} predict
+Exec = {prescient_bin} predict
 AbortOnFail
 """
     try:
         hook_path.write_text(hook_content)
         logger.info(f"Pacman hook successfully installed at {hook_path}")
-        console.print(f"[bold green]Sentinel Pacman hook installed successfully at {hook_path}[/bold green]")
-        console.print("[dim]Hook wired to executable: {sentinel_bin}[/dim]")
+        console.print(f"[bold green]prescient Pacman hook installed successfully at {hook_path}[/bold green]")
+        console.print("[dim]Hook wired to executable: {prescient_bin}[/dim]")
     except Exception as e:
         logger.error(f"Failed to write Pacman hook to {hook_path}: {e}")
         console.print(f"[bold red]Failed to write Pacman hook: {e}!!!![/bold red]")

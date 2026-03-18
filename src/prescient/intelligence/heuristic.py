@@ -1,9 +1,9 @@
 import subprocess
 import os
 from rich.console import Console
-from sentinel.core.logger import logger
-from sentinel.core.utils import detect_package_manager
-from sentinel.config import save_learned_package
+from prescient.core.logger import logger
+from prescient.core.utils import detect_package_manager
+from prescient.config import save_learned_package
 
 console = Console()
 
@@ -142,7 +142,7 @@ def scan_transaction_heuristics(safe_package_list: list[str]) -> tuple[bool, str
             saved = save_learned_package(pkg, reason)
 
             if saved:
-                console.print(f"  [bold magenta]Sentinel Intelligence learned a new threat:[/bold magenta] [white]{pkg}[/white]")
+                console.print(f"  [bold magenta]prescient Intelligence learned a new threat:[/bold magenta] [white]{pkg}[/white]")
                 console.print(f"    [dim white]↳ Reason: {reason}[/dim white]")
             findings.append((pkg,reason))
 
