@@ -4,6 +4,8 @@ import sys
 import os
 import time
 import select
+import shutil
+import pwd
 
 from prescient.core.hooks import install
 from prescient.core.logger import logger
@@ -163,6 +165,69 @@ def heal():
 
     culprits = run_diagnostics()
     run_autoheal_sequence(culprits)
+
+@app.command()
+def uninstall():
+    """
+    Complete self-destruct sequence. Removes all hooks, logs, binaries, and source files.
+    """
+    logger.info("User initiated self-destruct sequence (uninstall).")
+
+    # Root check
+    if os.geteuid()!= 0:
+        logger.error("Uninstall failed: Root privileges required.")
+        console.print("\n[bold red]Error: Complete removal requires system-level privileges.[/bold red]")
+        console.print("Try running: [bold yellow]sudo prescient uninstall[/bold yellow]\n")
+        sys.exit(1)
+
+    console.print("\n[bold red]!!! INITIATING PRESCIENT SELF-DESTRUCT !!![/bold red]")
+    console.print("[white]This will permanently remove all hooks, logs, configs, and source files.[/white]")
+
+    # Conformation
+    confirm = typer.confirm("Are you sure you want to purge prescient from this system?")
+    if not confirm:
+        logger.info("Uninstall aborted by user.")
+        console.print("[yellow]Uninstall aborted. Prescient remains active.[/yellow]\n")
+        sys.exit(0)
+
+    console.print("\n[cyan]Purging system footprint...[/cyan]")
+
+    sudo_user = os.environ.get("SUDO_USER")
+    if sudo_user:
+        real_home = pwd.getpwnam(sudo_user).pw_dir
+    else:
+        real_home = os.path.expanduser("~")
+    
+    install_dir = os.path.join(real_home, ".prescient")
+
+    # Defining the purge targets
+    targets = {
+        "APT Hook": "/etc/apt/apt.conf.d/99prescient-guardian",
+        "System Configs": "/etc/prescient",
+        "Logs Data": "/var/log/prescient.log",
+        "State Directory": "/var/lib/prescient",
+        "CLI Symlink": "/usr/local/bin/prescient",
+        "Core Source Directory": install_dir
+    }
+
+    # Execute
+    for name, path in targets.items():
+        if os.path.exists(path):
+            try:
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
+                console.print(f"  [green]Removed {name}[/green] ([dim]{path}[/dim])")
+            
+            except Exception as e:
+                console.print(f"  [red]!!Failed to remove {name}[/red] ([dim]{e}[/dim])")
+        else:
+            console.print(f"  [dim]~ Skipped {name} (Not found)[/dim]")
+
+    console.print("\n[bold green]Prescient has been completely erased from the system.[/bold green]")
+    console.print("[white]Update lifecycle returned to standard package manager control.[/white]\n")
+
 
 if __name__=="__main__":
     app()
