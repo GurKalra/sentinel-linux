@@ -2,7 +2,7 @@ import subprocess
 import json
 from rich.console import Console
 from rich.table import Table
-from sentinel.core.logger import logger
+from prescient.core.logger import logger
 
 console = Console()
 
@@ -40,7 +40,7 @@ def run_diagnostics() -> list:
     Also provides the sorted list for autoheal engine
     """
     logger.info("Starting diagnostic scan of current boot logs.")
-    with console.status("[bold cyan] Sentinel is dynamically analyzing current boot logs...[/bold cyan]", spinner="bouncingBar"):
+    with console.status("[bold cyan] prescient is dynamically analyzing current boot logs...[/bold cyan]", spinner="bouncingBar"):
         logs = get_structured_logs()
 
     if not logs:

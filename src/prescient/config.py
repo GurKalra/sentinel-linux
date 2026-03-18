@@ -1,19 +1,19 @@
 import tomlkit
 import os
 from pathlib import Path
-from sentinel.core.logger import logger
+from prescient.core.logger import logger
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 CONFIG_PATHS = [
-    PROJECT_ROOT / "sentinel.toml", #Local dev folder
-    Path("/etc/sentinel/sentinel.toml")  # System-wide install
+    PROJECT_ROOT / "prescient.toml", #Local dev folder
+    Path("/etc/prescient/prescient.toml")  # System-wide install
 ]
 
 CONFIG = {}
 
 def get_active_config_path() -> Path | None:
-    """Detects which config file Sentinel is currently using."""
+    """Detects which config file prescient is currently using."""
     for path in CONFIG_PATHS:
         if path.exists():
             return path
@@ -41,7 +41,7 @@ def save_learned_package(pkg_name: str, reason: str) -> bool:
     Preserves all user comments and automatically reloads the RAM config."""
     path = get_active_config_path()
     if not path:
-        logger.warning("No sentinel.toml found. Cannot persist learned package.")
+        logger.warning("No prescient.toml found. Cannot persist learned package.")
         return False
     
     try:
@@ -57,16 +57,16 @@ def save_learned_package(pkg_name: str, reason: str) -> bool:
         if "heuristics" not in high_risk_table:
             heuristics_array = tomlkit.array()
             high_risk_table.add("heuristics", heuristics_array)
-            high_risk_table["heuristics"].comment("Packages dynamically flagged by Sentinel's Intelligence Engine")
+            high_risk_table["heuristics"].comment("Packages dynamically flagged by prescient's Intelligence Engine")
 
         heuristics_list = high_risk_table["heuristics"]
 
         # Preventing duplicates
         if pkg_name in heuristics_list:
-            logger.debug(f"Package '{pkg_name}' is already known to Sentinel.")
+            logger.debug(f"Package '{pkg_name}' is already known to prescient.")
             return True
         
-        logger.info(f"Sentinel learned new threat: '{pkg_name}' ({reason})")
+        logger.info(f"prescient learned new threat: '{pkg_name}' ({reason})")
         heuristics_list.append(pkg_name)
 
         with open(path, "w", encoding="utf-8") as f:

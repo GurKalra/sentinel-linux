@@ -6,13 +6,13 @@ import os
 import json
 from pathlib import Path
 from rich.console import Console
-from sentinel.core.logger import logger
+from prescient.core.logger import logger
 
 console = Console()
 
 COOLDOWN_SECONDS = 600
 MIN_FREE_GB = 5
-STATE_DIR = Path("/var/lib/sentinel")
+STATE_DIR = Path("/var/lib/prescient")
 STATE_FILE = STATE_DIR / "last_snapshot.json"
 
 def check_disk_space() -> bool:
@@ -107,7 +107,7 @@ def trigger_snapshot(package_data: str, trigger_reason: str = "Unknown Safety Tr
     
     # Extract the first few characters of the update for the description
     preview = package_data[:25].replace('\n', ' ').strip()
-    comment = f"Sentinel Pre-Update: {preview}..."
+    comment = f"prescient Pre-Update: {preview}..."
     logger.info(f"Triggering {provider} snapshot. Target: {comment}")
 
     with console.status (f"[bold cyan]Creating {provider.capitalize()} Snapshot (Do not close terminal (Max Wait: 120s))...[/bold cyan]", spinner="dots"):
@@ -125,7 +125,7 @@ def trigger_snapshot(package_data: str, trigger_reason: str = "Unknown Safety Tr
                 
                 logger.info(f"Snapper snapshot created successfully. ID: {snap_id}")
                 console.print(f"  [bold green]Snapper Snapshot Created:[/bold green] ID [bold white]{snap_id}[/bold white]")
-                console.print(f"    [white]↳ To undo this update later, run:[/white] [bold yellow]sudo sentinel undo[/bold yellow]")
+                console.print(f"    [white]↳ To undo this update later, run:[/white] [bold yellow]sudo prescient undo[/bold yellow]")
                 
                 save_snapshot_state(provider, snap_id, trigger_reason)
                 return True
@@ -145,7 +145,7 @@ def trigger_snapshot(package_data: str, trigger_reason: str = "Unknown Safety Tr
                 
                 logger.info(f"Timeshift snapshot created successfully. Name: {snap_name}")
                 console.print(f"  [bold green]Timeshift Snapshot Created:[/bold green] [bold white]{snap_name}[/bold white]")
-                console.print(f"    [white]↳ To undo this update later, run:[/white] [bold yellow]sudo sentinel undo[/bold yellow]")
+                console.print(f"    [white]↳ To undo this update later, run:[/white] [bold yellow]sudo prescient undo[/bold yellow]")
                 
                 save_snapshot_state(provider, snap_name, trigger_reason)
                 return True

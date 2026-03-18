@@ -2,8 +2,8 @@ import os
 import shutil
 import shlex
 from rich.console import Console
-from sentinel.config import CONFIG
-from sentinel.core.logger import logger
+from prescient.config import CONFIG
+from prescient.core.logger import logger
 
 console = Console()
 

@@ -4,7 +4,7 @@ import shlex
 import subprocess
 import typer
 from rich.console import Console
-from sentinel.core.logger import logger
+from prescient.core.logger import logger
 
 console = Console()
 
@@ -76,14 +76,14 @@ def run_autoheal_sequence(culprits: list):
     if os.geteuid() != 0:
         logger.error("Autoheal aborted: Root privileges required.")
         console.print("\n[bold red]Error: Auto-Heal requires root privileges to restart services.[/bold red]")
-        console.print("Try running: [bold yellow]sudo sentinel heal[/bold yellow]\n")
+        console.print("Try running: [bold yellow]sudo prescient heal[/bold yellow]\n")
         return
     
     if not culprits:
         logger.info("Autoheal bypassed: No culprits provided by diagnostics.")
         return
     
-    console.print("\n[bold cyan]Sentinel Auto-Heal Engine: Formulating Plan...[/bold cyan]")
+    console.print("\n[bold cyan]prescient Auto-Heal Engine: Formulating Plan...[/bold cyan]")
     fixes = determine_fixes(culprits)
 
     if not fixes:

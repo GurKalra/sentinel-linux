@@ -2,10 +2,10 @@ import subprocess
 import json
 from pathlib import Path
 from rich.console import Console
-from sentinel.core.logger import logger
+from prescient.core.logger import logger
 
 console = Console()
-STATE_FILE = Path("/var/lib/sentinel/last_snapshot.json")
+STATE_FILE = Path("/var/lib/prescient/last_snapshot.json")
 
 def get_last_snapshot() -> dict | None:
     """Reads the JSON state file to retrieve the last snapshot data."""

@@ -2,18 +2,18 @@ import logging
 import os
 
 # Target Defination
-SYSTEM_LOG_FILE = "/var/log/sentinel.log"
-FALLBACK_LOG_FILE = "/tmp/sentinel-user.log"
+SYSTEM_LOG_FILE = "/var/log/prescient.log"
+FALLBACK_LOG_FILE = "/tmp/prescient-user.log"
 
 def _setup_logger() -> logging.Logger:
     """Configures a secure, background-only file logger."""
 
     # Base logger
-    sentinel_logger = logging.getLogger("sentinel_core")
-    sentinel_logger.setLevel(logging.INFO)
+    prescient_logger = logging.getLogger("prescient_core")
+    prescient_logger.setLevel(logging.INFO)
 
-    if sentinel_logger.handlers:
-        return sentinel_logger
+    if prescient_logger.handlers:
+        return prescient_logger
     
     # Determining where we can write (Root vs User space)
     is_root = os.geteuid() == 0
@@ -25,7 +25,7 @@ def _setup_logger() -> logging.Logger:
             with open(log_path, 'a') as f:
                 pass
         
-        # SECURITY: Lock down /var/log/sentinel.log to root-only
+        # SECURITY: Lock down /var/log/prescient.log to root-only
         if is_root:
             os.chmod(log_path, 0o600)
         
@@ -38,11 +38,11 @@ def _setup_logger() -> logging.Logger:
         )
         file_handler.setFormatter(file_formatter)
         file_handler.setLevel(logging.DEBUG)
-        sentinel_logger.addHandler(file_handler)
+        prescient_logger.addHandler(file_handler)
     
     except PermissionError:
         pass
 
-    return sentinel_logger
+    return prescient_logger
 
 logger = _setup_logger()

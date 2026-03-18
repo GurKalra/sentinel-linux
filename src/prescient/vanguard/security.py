@@ -1,8 +1,8 @@
 import subprocess
 from rich.console import Console
-from sentinel.core.cache import get_cached_state, set_cached_state
-from sentinel.config import CONFIG
-from sentinel.core.logger import logger
+from prescient.core.cache import get_cached_state, set_cached_state
+from prescient.config import CONFIG
+from prescient.core.logger import logger
 
 console = Console()
 
@@ -14,7 +14,7 @@ def get_secure_boot_status() -> bool:
         return cache["sb_enabled"]
     
     try:
-        #Timeout ensures sentinel never hangs the update process
+        #Timeout ensures prescient never hangs the update process
         res = subprocess.run(
             ['mokutil', '--sb-state'], 
             capture_output=True,
@@ -51,7 +51,7 @@ def analyze_security_risk(safe_package_list: list[str]) -> bool:
     """
     Surgical Trigger: Only wakes up if DKMS, Kernel, or Bootloader are changing.
     """
-    # Loading the list from the sentinel.toml
+    # Loading the list from the prescient.toml
     triggers = CONFIG.get("triggers", {})
     kernel_pkgs = triggers.get("high_risk", {}).get("kernel", [])
     boot_pkgs = triggers.get("high_risk", {}).get("bootloader", [])
@@ -69,7 +69,7 @@ def analyze_security_risk(safe_package_list: list[str]) -> bool:
     if not (kernel_changing or dkms_changing or shim_changing):
         return True
 
-    console.print("[bold blue]Sentinel Security & Driver Audit...[/bold blue]")
+    console.print("[bold blue]prescient Security & Driver Audit...[/bold blue]")
     
     sb_active = get_secure_boot_status()
     dkms_modules = get_dkms_modules()

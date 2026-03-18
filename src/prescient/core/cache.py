@@ -3,7 +3,7 @@ import os
 import time
 from pathlib import Path
 
-CACHE_FILE = Path("/dev/shm/sentinel_session.json")
+CACHE_FILE = Path("/dev/shm/prescient_session.json")
 CACHE_TTL_SECONDS = 1800
 
 def get_cached_state():
