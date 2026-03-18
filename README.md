@@ -103,6 +103,12 @@ sudo prescient undo
 sudo prescient heal
 ```
 
+- To completely remove prescient, its hooks, and all system files (Requires root):
+
+```bash
+sudo prescient uninstall
+```
+
 ---
 
 ## FOSSHack 2026 Roadmap

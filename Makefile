@@ -10,6 +10,4 @@ install:
 		@echo "System link created successfully!!"
 
 uninstall:
-		@echo "Removing prescient global link..."
-		@sudo rm -f /usr/local/bin/prescient
-		@echo "Uninstalled cleanly."
+		@echo "To completely remove prescient, run: sudo prescient uninstall"		
