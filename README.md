@@ -38,7 +38,13 @@ Prescient does not replace your package manager. It performs deterministic pre-f
 
 - **Transparent Auto-Healer (`prescient heal`):** _(Live)_ An interactive execution engine that maps critical `journalctl` failures to known the remediation playbooks. It transparently proposes exact bash fixes for crashed services and waits for user confirmation before safely executing them.
 
-- **Initramfs Rescue Hook:** _(Planned)_ A minimal, POSIX-compliant shell hook injected into the initramfs boot stage. This allows for absolute worst-case emergency recovery, enabling the user to trigger a prescient rollback even if the system fails to reach a login screen or a TTY terminal.
+- **Initramfs Rescue Hook (`prescient-rescue`):** _(Live)_ A minimal, POSIX-compliant shell hook injected into the initramfs boot stage. This allows for absolute worst-case emergency recovery. If an update completely breaks your boot sequence, you can trigger a raw filesystem rollback directly from the initramfs prompt, bypassing the need for D-Bus or systemd.
+
+- **TTY Pastebin Exporter (`prescient diagnose --share`):** _(Planned)_ A frictionless log-sharing mechanism designed for headless or broken GUI states. It will securely pipe anonymized crash traces and `journalctl` outputs directly to a CLI-friendly pastebin (like `termbin.com`) via `netcat`, generating a short URL you can easily share for remote debugging.
+
+- **Network & Mirror Pre-Flight:** _(Planned)_ An active network health auditor that pings your configured package mirrors (e.g., `/etc/apt/sources.list`) before a transaction begins. It will prevent broken updates caused by mid-download 404 errors, expired GPG signatures, or unresponsive repository servers.
+
+- **Interactive TUI Control Center:** _(Planned)_ A comprehensive Terminal User Interface. Moving beyond a read-only status screen, this dashboard acts as a visual command center. Users can navigate graphical buttons with their keyboard to execute core commands (`undo`, `heal`, `diagnose`), view system health metrics, seamlessly pull OTA updates directly from the main repository, or cleanly trigger the system uninstall sequence.
 
 ## The North Stars of prescient
 
@@ -47,7 +53,7 @@ Prescient Linux is built on four uncompromising principles:
 1. **Low Latency:** Intercepts and audits must take milliseconds. No bloated execution.
 2. **Low False Positives:** Only wake up the heavy probes when the boot-chain or critical services are genuinely threatened.
 3. **Clear Explanations:** Don't just throw errors. Tell the user exactly _why_ it's dangerous and _how_ to fix it.
-4. **Reliability > Feature Count:** A half-broken rollback is worse than no rollback. Every feature must be atomic and safe.
+4. **Reliability > Feature Count:** A half-broken rollback is worse than no rollback. Every recovery feature must be atomic, safe, and functional—even from a dead, unbootable state.
 
 ---
 
@@ -97,11 +103,17 @@ prescient diagnose
 sudo prescient undo
 ```
 
+- To recover a completely unbootable system from the `(initramfs)` prompt:
+
+````bash
+prescient-rescue
+```
+
 - To transparently auto-recover crashed services based on log diagnostics (Requires root):
 
 ```bash
 sudo prescient heal
-```
+````
 
 - To completely remove prescient, its hooks, and all system files (Requires root):
 
@@ -123,10 +135,10 @@ This project is actively being built for FOSS Hack 2026.
 - [x] **Phase 5:** Extensible Rules Schema (Custom `.toml` triggers for power users)
 - [x] **Phase 6:** Atomic Local Rollback (`prescient undo` via local cache simulation)
 - [x] **Phase 7:** Transparent Auto-Healer (prescient heal with interactive command proposals).
-- [ ] **Phase 8:** Initramfs Rescue Hook (Minimal POSIX shell failsafe for broken boots)
+- [x] **Phase 8:** Initramfs Rescue Hook (Minimal POSIX shell failsafe for broken boots)
 - [ ] **Phase 9:** TTY Pastebin Exporter (prescient diagnose --share via termbin).
 - [ ] **Phase 10:** Network & Mirror Pre-Flight (Checking repo health before APT runs).
-- [ ] **Phase 11:** Interactive TUI Dashboard (Read-only visual system overview)
+- [ ] **Phase 11:** Interactive TUI Control Center (Visual execution, OTA updates, and metrics)
 
 ---
 

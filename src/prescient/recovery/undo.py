@@ -1,5 +1,8 @@
 import subprocess
 import json
+import re
+import shutil
+from datetime import datetime
 from pathlib import Path
 from rich.console import Console
 from prescient.core.logger import logger
@@ -16,6 +19,64 @@ def get_last_snapshot() -> dict | None:
     except Exception as e:
         logger.error(f"Failed to read undo state: {e}")
         return None
+
+def get_latest_system_snapshot() -> dict | None:
+    """
+    In rescue context, reads Timeshift/Snapper directories directly instead of 
+    calling their CLIs (which need D-Bus/systemd and fail in chroot). 
+    """
+    # Timeshift filesystem scan
+    timeshift_config_path = Path("/etc/timeshift/timeshift.json")
+    if timeshift_config_path.exists():
+        try:
+            snapshot_dirs = [
+                Path("/run/timeshift/backup/timeshift/snapshots"),
+                Path("/timeshift/snapshots"),
+            ]
+
+            for snap_dir in snapshot_dirs:
+                if snap_dir.exists():
+                    snaps = sorted([d for d in snap_dir.iterdir() if d.is_dir()])
+                    if snaps:
+                        latest = snaps[-1].name
+                        try:
+                            from datetime import datetime
+                            dt = datetime.strptime(latest, "%Y-%m-%d_%H-%M-%S")
+                            ts = dt.timestamp()
+                        except ValueError:
+                            ts = 0.0
+                        
+                        logger.info(f"Found Timeshift snapshot via filesystem scan: {latest}")
+                        return {
+                            "provider": "timeshift",
+                            "snapshot_name": latest,
+                            "created_at": ts,
+                            "trigger_reason": "Rescue Scan (Filesystem Direct)"
+                        }
+        except Exception as e:
+                logger.error(f"Failed to scan Timeshift snapshots directly: {e}")
+
+    # Snapper filesystem scan
+    snapper_dir = Path("/.snapshots")
+    if snapper_dir.exists():
+        try:
+            snap_ids = sorted([
+                int(d.name) for d in snapper_dir.iterdir()
+                if d.is_dir() and d.name.isdigit()
+            ])
+            if snap_ids:
+                last_id = str(snap_ids[-1])
+                logger.info(f"Found Snapper snapshot via filesystem scan: {last_id}")
+                return {
+                    "provider": "snapper",
+                    "snapshot_name": last_id,
+                    "created_at": 0.0,
+                    "trigger_reason": "Rescue Scan (Filesystem Direct)"
+                }
+        except Exception as e:
+            logger.error(f"Failed to scan Snapper snapshots: {e}")
+        
+    return None
     
 def verify_snapshot(state: dict) -> bool:
     """
@@ -36,7 +97,8 @@ def verify_snapshot(state: dict) -> bool:
                 text=True,
                 timeout=10
             )
-            return snap_target in res.stdout
+            if snap_target in res.stdout:
+                return True
         elif provider == "timeshift":
             res = subprocess.run(
                 ["timeshift", "--list"],
@@ -44,11 +106,30 @@ def verify_snapshot(state: dict) -> bool:
                 text=True,
                 timeout=10
             )
-            return snap_target in res.stdout
-    except Exception as e:
-        logger.error(f"Snapshot verification failed for {provider}: {e}")
-        return False
+            if snap_target in res.stdout:
+                return True
+    except Exception:
+        pass
+    
+    logger.info("CLI verification failed. Falling back to filesystem verification...")
 
+    if provider == "timeshift":
+        possible_paths = [
+            Path(f"/timeshift/snapshots/{snap_target}"),
+            Path(f"/run/timeshift/backup/timeshift/snapshots/{snap_target}"),
+        ]
+        for path in possible_paths:
+            if path.exists():
+                logger.info(f"Snapshot verified via filesystem at {path}")
+                return True
+            
+    elif provider == "snapper":
+        snapper_path = Path(f"/.snapshots/{snap_target}/snapshot")
+        if snapper_path.exists():
+            logger.info(f"Snapshot verified via filesystem at {snapper_path}")
+            return True
+
+    logger.error(f"Snapshot '{snap_target}' could not be verified by CLI or filesystem.")
     return False
 
 def execute_rollback(state: dict) -> bool:

@@ -11,7 +11,6 @@ def get_cached_state():
     if not CACHE_FILE.exists():
         return {}
 
-    if CACHE_FILE.exists():
         try:
             # Only trust if the cache is not expired
             if(time.time() - CACHE_FILE.stat().st_mtime) < CACHE_TTL_SECONDS:
