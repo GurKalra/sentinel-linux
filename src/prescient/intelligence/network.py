@@ -11,7 +11,7 @@ def export_to_termbin(log_data: str) -> str | None:
         port = 9999
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(5.0)
+            s.settimeout(30.0)
             s.connect((host, port))
 
             # Sending log data
@@ -21,7 +21,7 @@ def export_to_termbin(log_data: str) -> str | None:
             s.shutdown(socket.SHUT_WR)
 
             # Termbin's response
-            response = s.recv(1024).decode("utf-8").strip().rsplit('\x00')
+            response = s.recv(1024).decode("utf-8").strip().rstrip('\x00')
             if response.startswith("http"):
                 logger.info(f"Successfully exported logs to {response}")
                 return response

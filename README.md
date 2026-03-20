@@ -40,7 +40,7 @@ Prescient does not replace your package manager. It performs deterministic pre-f
 
 - **Initramfs Rescue Hook (`prescient-rescue`):** _(Live)_ A minimal, POSIX-compliant shell hook injected into the initramfs boot stage. This allows for absolute worst-case emergency recovery. If an update completely breaks your boot sequence, you can trigger a raw filesystem rollback directly from the initramfs prompt, bypassing the need for D-Bus or systemd.
 
-- **TTY Pastebin Exporter (`prescient diagnose --share`):** _(Planned)_ A frictionless log-sharing mechanism designed for headless or broken GUI states. It will securely pipe anonymized crash traces and `journalctl` outputs directly to a CLI-friendly pastebin (like `termbin.com`) via `netcat`, generating a short URL you can easily share for remote debugging.
+- **TTY Pastebin Exporter (`prescient diagnose --share`):** _(Live)_ A frictionless log-sharing mechanism designed for headless or broken GUI states. It securely pipes anonymized crash traces and `journalctl` outputs directly to a CLI-friendly pastebin (`paste.rs`) using native HTTPS sockets to bypass strict network firewalls, generating a short URL for remote debugging. It includes a secured, local offline fallback mechanism if the system's network drivers are completely broken.
 
 - **Network & Mirror Pre-Flight:** _(Planned)_ An active network health auditor that pings your configured package mirrors (e.g., `/etc/apt/sources.list`) before a transaction begins. It will prevent broken updates caused by mid-download 404 errors, expired GPG signatures, or unresponsive repository servers.
 
@@ -97,6 +97,12 @@ prescient predict
 prescient diagnose
 ```
 
+- To export diagnostic logs to a public URL for remote support:
+
+```bash
+prescient diagnose --share
+```
+
 - To safely rollback the system to the last pre-update snapshot (Requires root):
 
 ```bash
@@ -136,7 +142,7 @@ This project is actively being built for FOSS Hack 2026.
 - [x] **Phase 6:** Atomic Local Rollback (`prescient undo` via local cache simulation)
 - [x] **Phase 7:** Transparent Auto-Healer (prescient heal with interactive command proposals).
 - [x] **Phase 8:** Initramfs Rescue Hook (Minimal POSIX shell failsafe for broken boots)
-- [ ] **Phase 9:** TTY Pastebin Exporter (prescient diagnose --share via termbin).
+- [x] **Phase 9:** TTY Pastebin Exporter (prescient diagnose --share via termbin).
 - [ ] **Phase 10:** Network & Mirror Pre-Flight (Checking repo health before APT runs).
 - [ ] **Phase 11:** Interactive TUI Control Center (Visual execution, OTA updates, and metrics)
 
