@@ -40,7 +40,7 @@ Prescient does not replace your package manager. It performs deterministic pre-f
 
 - **Initramfs Rescue Hook (`prescient-rescue`):** _(Live)_ A minimal, POSIX-compliant shell hook injected into the initramfs boot stage. This allows for absolute worst-case emergency recovery. If an update completely breaks your boot sequence, you can trigger a raw filesystem rollback directly from the initramfs prompt, bypassing the need for D-Bus or systemd.
 
-- **TTY Pastebin Exporter (`prescient diagnose --share`):** _(Live)_ A frictionless log-sharing mechanism designed for headless or broken GUI states. It securely pipes anonymized crash traces and `journalctl` outputs directly to a CLI-friendly pastebin (`paste.rs`) using native HTTPS sockets to bypass strict network firewalls, generating a short URL for remote debugging. It includes a secured, local offline fallback mechanism if the system's network drivers are completely broken.
+- **TTY Pastebin Exporter (`prescient diagnose --share`):** _(Live)_ A frictionless log-sharing mechanism designed for headless or broken GUI states. It securely pipes anonymized crash traces and `journalctl` outputs directly to a CLI-friendly pastebin (`termbin.com`) using native Python sockets (bypassing the need for external tools like `netcat`), generating a short URL for remote debugging. It includes a secured, local offline fallback mechanism if the system's network drivers are completely broken.
 
 - **Network & Mirror Pre-Flight:** _(Planned)_ An active network health auditor that pings your configured package mirrors (e.g., `/etc/apt/sources.list`) before a transaction begins. It will prevent broken updates caused by mid-download 404 errors, expired GPG signatures, or unresponsive repository servers.
 
@@ -153,7 +153,3 @@ This project is actively being built for FOSS Hack 2026.
 This project is open-source and available under the **MIT License**. You are free to copy, modify, and distribute this software, as long as the original copyright and license notice are included.
 
 See the [LICENSE](LICENSE) file for more details.
-
-```
-
-```
