@@ -273,15 +273,15 @@ def update():
         )
 
         # Reinstall via pip (locally)
-        console.print("[dim]Applying updates to system binaries...[/dim]")
-        pip_path = os.path.join(install_dir, ".venv", "bin", "pip")
+        console.print("[dim]Applying updates to isolated enviroment...[/dim]")
+        python_path = os.path.join(install_dir, ".venv", "bin", "python")
 
-        if not os.path.exists(pip_path):
+        if not os.path.exists(python_path):
             console.print("[bold red]Error: Virtual environment not found in ~/.prescient/.venv[/bold red]")
             console.print("[white]Please re-run the installation script to repair it.[/white]")
             sys.exit(1)
         
-        pip_cmd = ["pip", "install", "--upgrade", "--e", "."]
+        pip_cmd = [python_path, "-m", "pip", "install", "--upgrade", "-e", "."]
         subprocess.run(
             pip_cmd,
             cwd=install_dir,
