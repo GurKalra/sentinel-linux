@@ -25,11 +25,11 @@ COMMAND_REGISTRY = {
     "uninstall": {"file": "docs/uninstall.md", "runnable": False, "cli_cmd": "sudo prescient uninstall"},
 }
 
-ASCII_LOGO = r"""[bold cyan]
+ASCII_LOGO = r"""[bold #8ec07c]
 ___  ____ ____ ____ ____ _ ____ _  _ ___ 
 |__] |__/ |___ [__  |    | |___ |\ |  |  
 |    |  \ |___ ___] |___ | |___ | \|  |  
-[/bold cyan]"""
+[/bold #8ec07c]"""
 
 def get_last_health_status() -> str:
     """
@@ -39,7 +39,7 @@ def get_last_health_status() -> str:
 
     if not log_path.exists():
         logger.debug("TUI health check: prescient.log not found.")
-        return "Health: [yellow]Unknown[/yellow]\n[dim](Run predict to check)[/dim]"
+        return "Health: [#fabd2f]Unknown[/#fabd2f]\n[dim](Run predict to check)[/dim]"
     
     try:
         lines = log_path.read_text().splitlines()
@@ -47,23 +47,21 @@ def get_last_health_status() -> str:
             if "Pre-flight audit passed successfully" in line:
                 logger.debug(f"TUI health status resolved: Healthy.")
                 timestamp = line.split("]")[0].strip("[")
-                return f"Health: [bold green]Healthy[/bold green]\n[dim]Last check: {timestamp}[/dim]"
+                return f"Health: [bold #b8bb26]Healthy[/bold #b8bb26]\n[dim]Last check: {timestamp}[/dim]"
             if "VETO" in line or "BROKEN" in line:
                 logger.debug(f"TUI health status resolved: Issues Detected.")
                 timestamp = line.split("]")[0].strip("[")
-                return f"Health: [bold red]Issues Detected[/bold red]\n[dim]Last check: {timestamp}[/dim]"
+                return f"Health: [bold #fb4934]Issues Detected[/bold #fb4934]\n[dim]Last check: {timestamp}[/dim]"
     except Exception as e:
         logger.error(f"TUI failed to parse health status from log: {e}")
 
-    return "Health: [yellow]Unknown[/yellow]\n[dim](Run predict to check)[/dim]"
+    return "Health: [#fabd2f]Unknown[/#fabd2f]\n[dim](Run predict to check)[/dim]"
 
 # SCREENS
-
 class CommandOutputScreen(Screen):
     """
     Overlay screen that shows live command output.
     """
-
     BINDINGS = [
         ("q", "pop_screen", "Back"),
         ("escape", "pop_screen", "Back"),
@@ -75,7 +73,7 @@ class CommandOutputScreen(Screen):
     
     def compose(self) -> ComposeResult:
         yield Static(
-            f"[bold cyan]> prescient {self.command}[/bold cyan]\n[dim]Press Q or Esc to return[/dim]", 
+            f"[bold #8ec07c]> prescient {self.command}[/bold #8ec07c]\n[dim]Press Q or Esc to return[/dim]", 
             id="output-header"
         )
         yield RichLog(id="output-log", highlight=True, markup=True)
@@ -94,22 +92,21 @@ class CommandOutputScreen(Screen):
                 stderr=subprocess.STDOUT,
                 text=True
             )
-
             for line in process.stdout:
                 self.app.call_from_thread(log.write, line.rstrip())
             
             process.wait()
 
             if process.returncode == 0:
-                self.call_from_thread(log.write, "\n[bold green]Command completed successfully.[/bold green]")
-                self.call_from_thread(log.write, "[dim]Press Q or Esc to return to dashboard.[/dim]")
+                self.app.call_from_thread(log.write, "\n[bold #b8bb26]Command completed successfully.[/bold #b8bb26]")
+                self.app.call_from_thread(log.write, "[dim]Press Q or Esc to return to dashboard.[/dim]")
                 logger.info(f"TUI overlay command '{self.command}' completed successfully.")
             else:
-                self.call_from_thread(log.write, f"\n[bold red]Command failed with exit code {process.returncode}.[/bold red]")
+                self.app.call_from_thread(log.write, f"\n[bold #fb4934]Command failed with exit code {process.returncode}.[/bold #fb4934]")
                 logger.error(f"TUI overlay command '{self.command}' failed: exit {process.returncode}")
         
         except Exception as e:
-            self.call_from_thread(log.write, f"[bold red]Error: {e}[/bold red]")
+            self.app.call_from_thread(log.write, f"[bold #fb4934]Error: {e}[/bold #fb4934]")
             logger.error(f"TUI overlay worker crashed for '{self.command}': {e}")
 
 # WIDGETS
@@ -121,13 +118,13 @@ class TopHeader(Horizontal):
         yield Static(ASCII_LOGO, id="logo")
         with Vertical(id="tagline-container"):
             yield Static(
-                f"Predict. Protect. Recover. | v{get_local_version()}", 
+                f"predict. Protect. Recover. | v{get_local_version()}", 
                 id="tagline"
             )
             
         with Vertical(id="header-right"):
             yield Static(
-                "[@click=app.open_link]Repository[/]\nConsider starring the project!",
+                "[@click=app.open_link]Repository[/]\n[dim]Thank you for using prescient[/dim]\n[dim]Consider starring the project![/dim]",
                 id="github-text"
             )
             yield Button("[ Exit TUI ]", id="exit-button", classes="terminal-btn")
@@ -167,7 +164,7 @@ class MainDashboard(Container):
 
                     with Center(id="action-area"):
                         yield Button("[ Run Command ]", id="btn-run-cmd", classes="hidden terminal-btn")
-                        yield Static("To use this, exit the TUI and run:\n[bold cyan]sudo prescient ...[/bold cyan]", id="cli-warning", classes="hidden")
+                        yield Static("To use this, exit the TUI and run:\n[bold #8ec07c]sudo prescient ...[/bold #8ec07c]", id="cli-warning", classes="hidden")
 
     async def on_mount(self) -> None:
         """
@@ -177,17 +174,16 @@ class MainDashboard(Container):
         self.app.run_update_check()
 class InstallScreen(Container):
     """
-    The centered first-time install screen.
+    The cente#fb4934 first-time install screen.
     """
     def compose(self) -> ComposeResult:
         with Middle():
             with Center():
                 yield Static("Prescient is installed, but system hooks are missing.", classes="install-text")
-                yield Button("Install System Hooks", id="btn-install-hooks", classes="terminal-btn")
+                yield Button("[ Install System Hooks ]", id="btn-install-hooks", classes="terminal-btn")
                 yield Static("", id="install-status", classes="dim-text")
 
 # MAIN APP
-
 class PrescientTUI(App):
     """
     The main Prescient Terminal UI.
@@ -197,17 +193,31 @@ class PrescientTUI(App):
         ("escape", "quit", ""),
         ("j", "cursor_down", "Down"),     
         ("k", "cursor_up", "Up"),
+        ("l", "focus_right_pane", "Right"),
+        ("h", "focus_sidebar", "Left"),
         ("enter", "run_command", "Run"),
         ("r", "refresh_health", "Refresh"),
         ("u", "open_update", "Update"),
-        ("h", "focus_sidebar", "Commands"),
         ("?", "show_help", "Help"),
     ]
 
     current_command: reactive[str] = reactive("")
 
     CSS = """
-    Screen { background: $surface; }
+    Screen {
+        /* Gruvbox Dark Color Palette */
+        $surface: #282828;
+        $boost: #3c3836;
+        $primary-darken-2: #504945;
+        $text: #ebdbb2;
+        $text-muted: #a89984;
+        $accent: #8ec07c;
+        $success: #b8bb26;
+        $warning: #fabd2f;
+        $error: #fb4934;
+
+        background: $surface;
+    }
 
     /* Header */
     #top-header { height: 5; dock: top; padding: 0 1; border-bottom: solid $primary-darken-2; }
@@ -216,7 +226,7 @@ class PrescientTUI(App):
     #tagline { color: $text-muted; }
     #header-right { width: 40; content-align: right middle; padding-top: 1; }
     #github-text { text-align: right; }
-    #exit-button { margin-top: 1; }
+    #exit-button { margin-top: 1; min-width: 15; }
 
     /* Main Layout */
     #main-content-split { height: 1fr; }
@@ -226,24 +236,23 @@ class PrescientTUI(App):
 
     /* Right Pane */
     #right-pane { width: 1fr; height: 100%; }
-    #update-banner { height: 5; border-bottom: solid $primary-darken-2; padding: 0 2; }
+    #update-banner { height: 8; border-bottom: solid $primary-darken-2; padding: 0 2; }
     #update-text { width: 1fr; content-align: left middle; color: $success; text-style: bold; }
-    #main-wave { width: 40; height: 5; }
+    #main-wave { width: 50; height: 8; dock: right; }
 
     /* Content Area */
     #content-area { height: 1fr; padding: 1 3; }
     #doc-viewer { height: 1fr; overflow-y: auto; }
-    #action-area { height: auto; padding-top: 1; border-top: dashed $primary-darken-2; }
-    #cli-warning { text-align: center; padding: 1; color: $warning; }
+    #action-area { height: 3; dock: bottom; align: center middle; border-top: dashed $primary-darken-2; padding-top: 1; }
+    #run-hint { text-align: center; width: 100%; }
     .hidden { display: none; }
 
-    /* Terminal Button Styling */
+    /* Terminal Buttons */
     .terminal-btn {
-        background: transparent;
+        background: $surface;
         border: none;
-        color: $accent;
+        color: $text-muted;
         text-style: bold;
-        min-width: 20;
     }
     .terminal-btn:focus { background: $accent; color: $surface; }
     .terminal-btn:hover { background: $boost; }
@@ -275,7 +284,7 @@ class PrescientTUI(App):
         """
         try:
             self.query_one("#update-text", Static).update(
-                "[bold yellow]New Prescient version available![/bold yellow]\nSelect 'update' from the left panel."
+                "[bold #fabd2f]New Prescient version available![/bold #fabd2f]\Press 'u' to jump to 'update'."
             )
             logger.info("TUI update banner displayed successfully.")
         except Exception as e:
@@ -284,7 +293,6 @@ class PrescientTUI(App):
     def compose(self) -> ComposeResult:
         hook_path = "/etc/apt/apt.conf.d/99prescient-guardian"
         if os.path.exists(hook_path):
-            logger.info("TUI launched: hooks detected, showing main dashboard.")
             yield MainDashboard(id="main-dashboard")
         else:
             logger.warning("TUI launched: hooks not detected, showing install screen.")
@@ -293,6 +301,17 @@ class PrescientTUI(App):
         yield Footer()
 
     # ACTION HANDLERS
+    def action_focus_right_pane(self) -> None:
+        try:
+            self.query_one("#doc-viewer", Markdown).focus()
+        except Exception:
+            pass
+
+    def action_focus_sidebar(self) -> None:
+        try:
+            self.query_one("#command-list", ListView).focus()
+        except Exception:
+            pass
 
     def action_cursor_down(self) -> None:
         try:
@@ -308,12 +327,7 @@ class PrescientTUI(App):
     
     def action_refresh_health(self) -> None:
         self._refresh_health()
-    
-    def action_focus_sidebar(self) -> None:
-        try:
-            self.query_one("#command-list", ListView).focus()
-        except Exception:
-            pass
+        self.notify("Health refreshed.", title="Refresh")
     
     def action_run_command(self) -> None:
         if self.current_command:
@@ -358,7 +372,7 @@ class PrescientTUI(App):
 
     def action_show_help(self) -> None:
         logger.debug("User opened help overlay via '?' shortcut.")
-        self.notify("Use j/k to navigate, Enter to run, q or Esc to quit.", title="Keyboard Controls")
+        self.notify("j/k — navigate list  |  l — scroll docs  |  h — back to list  |  Enter — run  |  r — refresh health", title="Controls")
     
     def _refresh_health(self) -> None:
         """
@@ -371,7 +385,6 @@ class PrescientTUI(App):
             logger.error(f"TUI failed to refresh health widget: {e}")
     
     # EVENT HANDLERS
-
     def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
         if not event.item:
             return
@@ -393,20 +406,11 @@ class PrescientTUI(App):
                 logger.warning(f"TUI doc file missing: {doc_path}")
                 self.query_one("#doc-viewer", Markdown).update(f"# Missing Doc\nCould not find `{doc_path}`.")
 
-            btn = self.query_one("#btn-run-cmd", Button)
-            warning = self.query_one("#cli-warning", Static)
-
-            btn.remove_class("hidden")
-            warning.remove_class("hidden")
-
+            hint = self.query_one("#run-hint", Static)
             if config["runnable"]:
-                btn.display = True
-                warning.display = False
-                btn.label = f"[ Run {self.current_command.capitalize()} ]"
+                hint.update(f"Press [bold #8ec07c]Enter[/bold #8ec07c]\nto run [bold white]prescient {self.current_command}[/bold white]")
             else:
-                btn.display = False
-                warning.display = True
-                warning.update(f"[bold yellow]Interactive Command:[/bold yellow]\nTo use this, exit the TUI and type:\n[bold cyan]{config['cli_cmd']}[/bold cyan]")
+                hint.update(f"[bold #fabd2f]Interactive:[/bold #fabd2f]\nExit TUI and run [#8ec07c]{config['cli_cmd']}[/#8ec07c]")
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "exit-button":
@@ -414,14 +418,10 @@ class PrescientTUI(App):
             self.exit()
         elif event.button.id == "btn-install-hooks":
             logger.info("User initiated hook installation from TUI.")
-            self.query_one("#install-status", Static).update("[cyan]Installing hooks...[/cyan]")
+            self.query_one("#install-status", Static).update("[#8ec07c]Installing hooks...[/#8ec07c]")
             self.run_install_hooks_worker()
-        elif event.button.id == "btn-run-cmd":
-            logger.info(f"User clicked Run button for command: {self.current_command}")
-            self.action_run_command()
 
     # WORKERS
-
     @work(thread=True)
     def run_install_hooks_worker(self) -> None:
         logger.info("Hook installation worker started.") 
