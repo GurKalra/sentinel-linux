@@ -404,13 +404,16 @@ class PrescientTUI(App):
             except FileNotFoundError:
                 logger.warning(f"TUI doc file missing: {doc_path}")
                 self.query_one("#doc-viewer", Markdown).update(f"# Missing Doc\nCould not find `{doc_path}`.")
+            
+            try:
+                hint = self.query_one("#run-hint", Static)
+                if config["runnable"]:
+                    hint.update(f"Press [bold #8ec07c]Enter[/bold #8ec07c]\nto run [bold white]prescient {self.current_command}[/bold white]")
+                else:
+                    hint.update(f"[bold #fabd2f]Interactive:[/bold #fabd2f]\nExit TUI and run [#8ec07c]{config['cli_cmd']}[/#8ec07c]")
+            except Exception:
+                pass
 
-            hint = self.query_one("#run-hint", Static)
-            if config["runnable"]:
-                hint.update(f"Press [bold #8ec07c]Enter[/bold #8ec07c]\nto run [bold white]prescient {self.current_command}[/bold white]")
-            else:
-                hint.update(f"[bold #fabd2f]Interactive:[/bold #fabd2f]\nExit TUI and run [#8ec07c]{config['cli_cmd']}[/#8ec07c]")
-    
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "exit-button":
             logger.info("User exited TUI via Exit button.")
