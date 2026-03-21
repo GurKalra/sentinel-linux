@@ -204,8 +204,7 @@ class PrescientTUI(App):
     current_command: reactive[str] = reactive("")
 
     CSS = """
-    Screen {
-        /* Gruvbox Dark Color Palette */
+    /* Gruvbox Dark Color Palette */
         $surface: #282828;
         $boost: #3c3836;
         $primary-darken-2: #504945;
@@ -215,7 +214,7 @@ class PrescientTUI(App):
         $success: #b8bb26;
         $warning: #fabd2f;
         $error: #fb4934;
-
+    Screen {
         background: $surface;
     }
 
@@ -284,7 +283,7 @@ class PrescientTUI(App):
         """
         try:
             self.query_one("#update-text", Static).update(
-                "[bold #fabd2f]New Prescient version available![/bold #fabd2f]\Press 'u' to jump to 'update'."
+                "[bold #fabd2f]New Prescient version available![/bold #fabd2f]\nPress 'u' to jump to 'update'."
             )
             logger.info("TUI update banner displayed successfully.")
         except Exception as e:
