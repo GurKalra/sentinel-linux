@@ -134,9 +134,11 @@ def run_preflight_checks() -> bool:
     
     #3. Mirror Preflight
     if not is_removal:
-        console.print(" Mirror Health:")
         mirror_ok = run_mirror_preflight()
-        if not mirror_ok:
+        if mirror_ok:
+            console.print("Mirror Health: [bold green]Healthy[/bold green]")
+        else:
+            console.print("  Mirror Health: [bold red]BROKEN[/bold red]")
             is_safe = False
 
     if is_safe:
