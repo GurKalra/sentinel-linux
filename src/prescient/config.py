@@ -73,12 +73,46 @@ def save_learned_package(pkg_name: str, reason: str) -> bool:
             f.write(tomlkit.dumps(doc))
 
         if os.geteuid() == 0:
-            os.chmod(path, 0o600)
+            os.chmod(path, 0o644)
 
         reload_config()
         return True
     except Exception as e:
         logger.error(f"Intelligence persistence failed via tomlkit: {e}")
+        return False
+
+def save_auto_snapshot_config(enabled: bool) -> bool:
+    """
+    Saves the user's automated snapshot preference.
+    """
+    path = get_active_config_path()
+
+    if not path:
+        path = PROJECT_ROOT / "prescient.toml"
+        if not path.exists():
+            path.touch()
+    
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+            doc = tomlkit.parse(content) if content else tomlkit.document()
+        
+        # Adding core table in toml file
+        if "core" not in doc:
+            doc.add("core", tomlkit.table())
+        
+        doc["core"]["auto_snapshot"] = enabled
+
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(tomlkit.dumps(doc))
+        
+        if os.geteuid() == 0:
+            os.chmod(path, 0o644)
+        
+        reload_config()
+        return True
+    except Exception as e:
+        logger.error(f"Failed to save snapshot config: {e}")
         return False
 
 reload_config()
