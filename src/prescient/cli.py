@@ -21,6 +21,7 @@ from prescient.intelligence.diagnose import run_diagnostics, get_raw_journalctl_
 from prescient.intelligence.autoheal import run_autoheal_sequence
 from prescient.recovery.undo import get_last_snapshot, verify_snapshot, execute_rollback, get_latest_system_snapshot
 from prescient.intelligence.network import export_to_termbin
+from prescient.config import CONFIG
 
 console = Console()
 app = typer.Typer(help="Prescient Linux: Predict, Protect, Recover")
@@ -111,10 +112,16 @@ def predict():
         is_scary, risk_category = assess_blast_radius(safe_package_list)
 
         if is_scary:
-            logger.warning(f"High-Risk Update Detected ({risk_category}). Triggering snapshot.")
+            auto_snap = CONFIG.get("core", {}).get("auto_snapshot", True)
             console.print(f"\n[bold cyan] High-Risk Update Detected: [white]{risk_category}[/white][/bold cyan]")
-            console.print("  [cyan]Engaging Recovery Guardrails...[/cyan]")
-            trigger_snapshot(input_data, risk_category)
+            
+            if auto_snap:
+                logger.warning(f"High-Risk Update Detected ({risk_category}). Triggering snapshot.")
+                console.print("  [cyan]Engaging Recovery Guardrails...[/cyan]")
+                trigger_snapshot(input_data, risk_category)
+            else:
+                logger.warning(f"High-Risk Update Detected ({risk_category}). Auto-snapshots disabled by user. Skipping.")
+                console.print("  [dim yellow]Automated snapshots disabled in config. Skipping recovery checkpoint.[/dim yellow]")
         else:
             logger.info("No high-risk packages detected in transaction.")
 

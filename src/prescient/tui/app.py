@@ -11,6 +11,7 @@ from textual.widgets import Static, Button, Footer, ListView, ListItem, Label, M
 from prescient.core.update_checker import get_local_version, check_for_updates
 from prescient.core.logger import logger
 from prescient.tui.widgets import DuneWave
+from prescient.config import save_auto_snapshot_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
@@ -96,6 +97,15 @@ class InstallScreen(Container):
             yield Static("", id="install-status", classes="dim-text")
         yield DuneWave(id="install-wave-bottom")
 
+class ConfigScreen(Container):
+    def compose(self) -> ComposeResult:
+        with Vertical(id="install-content"):
+            yield Static("[bold #8ec07c]SNAPSHOT CONFIGURATION[/bold #8ec07c]", id="install-title")
+            yield Static("Do you want Prescient to automatically create system snapshots\nbefore executing high-risk updates?", classes="install-text")
+            yield Static("Press [bold #b8bb26]y[/bold #b8bb26] for Yes, or [bold #fb4934]n[/bold #fb4934] for No", classes="dim-text")
+            yield Static("", id="config-status", classes="dim-text")
+        yield DuneWave(id="install-wave-bottom")
+
 # Main App
 class PrescientTUI(App):
     BINDINGS = [
@@ -109,6 +119,8 @@ class PrescientTUI(App):
         ("u", "open_update", "Update"),
         ("?", "show_help", "Help"),
         ("enter", "install_hooks", "Install"),
+        ("y", "enable_snapshots", "Yes"),
+        ("n", "disable_snapshots", "No"),
     ]
 
     CSS = """
@@ -224,15 +236,30 @@ class PrescientTUI(App):
                 print(f"\n[Prescient] Hook installation failed (exit code {e.returncode}).")
                 input("\nPress Enter to return to the TUI...")
         if success:
-            logger.info("Hot-swapping to MainDashboard after successful install.")
+            logger.info("Hot-swapping to ConfigScreen after successful install.")
             self.query_one("#install-screen").remove()
-            self.mount(MainDashboard(id="main-dashboard"), before = self.query_one(Footer))
-            self.notify("Vanguard Engine Online.", title="System Ready")
+            self.mount(ConfigScreen(id="config-screen"), before = self.query_one(Footer))
         else:
             try:
                 status_text.update("[#fb4934]Installation failed. Check prescient.log[/#fb4934]")
             except Exception:
                 pass
+    
+    def action_enable_snapshots(self) -> None:
+        if self.query("#config-screen"):
+            save_auto_snapshot_config(True)
+            self._finalize_onboarding()
+    
+    def action_disable_snapshots(self) -> None:
+        if self.query("#config-screen"):
+            save_auto_snapshot_config(False)
+            self._finalize_onboarding()
+
+    def _finalize_onboarding(self) -> None:
+        logger.info("Onboarding complete. Booting MainDashboard.")
+        self.query_one("#config-screen").remove()
+        self.mount(MainDashboard(id="main-dashboard"), before=self.query_one(Footer))
+        self.notify("Vanguard Engine Online.", title="System Ready")
 
     def action_focus_right_pane(self) -> None:
         try:
