@@ -98,7 +98,7 @@ class InstallScreen(Container):
     can_focus = True
 
     BINDINGS = [
-        ("enter", "install-hooks", "Install"),
+        ("enter", "install_hooks", "Install"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -145,7 +145,7 @@ class InstallScreen(Container):
         if success:
             logger.info("Hot-swapping to ConfigScreen after successful install.")
             self.remove()
-            self.mount(ConfigScreen(id="config-screen"), before = self.query_one(Footer))
+            self.app.mount(ConfigScreen(id="config-screen"), before = self.app.query_one(Footer))
         else:
             try:
                 status_text.update("[#fb4934]Installation failed. Check prescient.log[/#fb4934]")
